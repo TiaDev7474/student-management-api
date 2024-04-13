@@ -12,17 +12,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const student_service_1 = require("./student.service");
 const studentController = {
     getAll: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        const data = yield student_service_1.studentService.getAll();
+        const { limit = 5, page = 0 } = req.query;
+        const data = yield student_service_1.studentService.getAll(parseInt(String(limit)), parseInt(String(page)));
         return res.status(data.status).json(data);
     }),
     delete: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        const { student_id } = req.params;
-        const data = yield student_service_1.studentService.delete(student_id);
+        const { id } = req.params;
+        const data = yield student_service_1.studentService.delete(id);
         return res.status(data.status).json(data);
     }),
     create: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         const student = req.body;
         const data = yield student_service_1.studentService.create(student);
+        return res.status(data.status).json(data);
+    }),
+    update: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        const student = req.body;
+        console.log(student);
+        const { id } = req.params;
+        const data = yield student_service_1.studentService.update(student, id);
         return res.status(data.status).json(data);
     }),
 };

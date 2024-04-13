@@ -21,13 +21,24 @@ class StudentService {
         this.prismaClient = prismaClient;
         this.prisma = prismaClient;
     }
-    getAll() {
+    getAll(limit, page) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const students = yield this.prisma.student.findMany();
+                const students = yield this.prisma.student.findMany({
+                    skip: (page - 1) * limit,
+                    take: limit,
+                    include: {
+                        average: true
+                    }
+                });
+                const totalStudents = yield this.prisma.student.count();
+                const totalPages = Math.ceil(totalStudents / limit);
                 return {
                     status: status_enum_1.AppStatus.success,
-                    data: students
+                    data: students,
+                    meta: {
+                        totalPages: totalPages
+                    }
                 };
             }
             catch (e) {
@@ -60,8 +71,29 @@ class StudentService {
             }
         });
     }
-    // @ts-ignore
     update(studentDto, student_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const newStudent = yield this.prisma.student.update({
+                    where: {
+                        id: student_id
+                    },
+                    data: {
+                        firstname: studentDto.firstname,
+                        lastname: studentDto.lastname,
+                    }
+                });
+                return {
+                    status: status_enum_1.AppStatus.updated,
+                    data: newStudent
+                };
+            }
+            catch (e) {
+                return {
+                    status: status_enum_1.AppStatus.failed,
+                };
+            }
+        });
     }
     delete(student_id) {
         return __awaiter(this, void 0, void 0, function* () {

@@ -23,52 +23,49 @@ class AverageService {
     }
     public async create(averageDto: IAverageDto): Promise<ApiResponse<any>> {
         try{
-            const average = await this.prisma.average.create({
-                data: {
-                    id: uuidv4(),
-                    average: averageDto.average ,
-                    student: {
-                        connect: {
-                            id: averageDto.student
-                        }
-                    }
-                }
-            })
+             console.log('here', averageDto.student);
+             const average = await  this.prisma.average.create({
+                     data: {
+                         id: uuidv4() ,
+                         average: averageDto.average ,
+                         student: {connect: {id: averageDto.student}} ,
+                     }
+                 }
+             )
             return {
                 data: average,
                 status: AppStatus.created
             }
-        }catch (e) {
+        }catch (e: any) {
+            console.log(e.message)
             return {
                 data: null,
-                message: `Error creating averages`,
+                message: e.message,
                 status: AppStatus.failed,
             };
         }
 
     }
-    public async update(averageDto: IUpdateAverageDto, average_id : string): Promise<ApiResponse<IAverage>> {
+    public async update(averageDto: IUpdateAverageDto, averageId: string): Promise<ApiResponse<any>> {
         try{
-            const average = await this.prisma.average.update({
-                data: {
-                    average: averageDto.average
-                } ,
+            const average = await  this.prisma.average.update({
                 where: {
-                    id: average_id
-                }
+                    id: averageId
+                } ,
+                data: { average: averageDto.average,}
             })
             return {
                 data: average,
                 status: AppStatus.updated
             }
-        }catch (e) {
+        }catch (e: any) {
+            console.log(e.message)
             return {
                 data: null,
-                message: `Error updating averages with id: ${average_id}`,
+                message: e.message,
                 status: AppStatus.failed,
             };
         }
-
 
     }
     public  async  delete(average_id: string): Promise<ApiResponse<IAverage>>  {
@@ -91,16 +88,23 @@ class AverageService {
         }
 
     }
-    public  async getAll(): Promise<ApiResponse<IAverage[]>>{
+    public  async getAll(limit: number, page: number): Promise<ApiResponse<IAverage[]>>{
         try{
-            const averages = await  this.prisma.average.findMany({
+            const  studentWithAverages = await this.prisma.student.findMany({
+                skip: (page - 1) * limit,
+                take: limit,
                 include: {
-                    student: true
+                    average: true
                 }
-            })
+            });
+            const averageCount = await this.prisma.student.count();
+            const totalPages = Math.ceil(averageCount / limit);
             return {
-                data: averages,
-                status: AppStatus.updated
+                data: studentWithAverages,
+                status: AppStatus.updated,
+                meta: {
+                    totalPages: totalPages
+                }
             }
         } catch (e) {
             return {
@@ -117,7 +121,6 @@ class AverageService {
                 _count: true,
                 _max: {
                     average: true,
-
                 },
                 _min: {average: true}
             })

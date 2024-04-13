@@ -24,15 +24,12 @@ class AverageService {
     create(averageDto) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                console.log('here', averageDto.student);
                 const average = yield this.prisma.average.create({
                     data: {
                         id: (0, uuid_1.v4)(),
                         average: averageDto.average,
-                        student: {
-                            connect: {
-                                id: averageDto.student
-                            }
-                        }
+                        student: { connect: { id: averageDto.student } },
                     }
                 });
                 return {
@@ -41,24 +38,23 @@ class AverageService {
                 };
             }
             catch (e) {
+                console.log(e.message);
                 return {
                     data: null,
-                    message: `Error creating averages`,
+                    message: e.message,
                     status: status_enum_1.AppStatus.failed,
                 };
             }
         });
     }
-    update(averageDto, average_id) {
+    update(averageDto, averageId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const average = yield this.prisma.average.update({
-                    data: {
-                        average: averageDto.average
-                    },
                     where: {
-                        id: average_id
-                    }
+                        id: averageId
+                    },
+                    data: { average: averageDto.average, }
                 });
                 return {
                     data: average,
@@ -66,9 +62,10 @@ class AverageService {
                 };
             }
             catch (e) {
+                console.log(e.message);
                 return {
                     data: null,
-                    message: `Error updating averages with id: ${average_id}`,
+                    message: e.message,
                     status: status_enum_1.AppStatus.failed,
                 };
             }
@@ -96,17 +93,24 @@ class AverageService {
             }
         });
     }
-    getAll() {
+    getAll(limit, page) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const averages = yield this.prisma.average.findMany({
+                const studentWithAverages = yield this.prisma.student.findMany({
+                    skip: (page - 1) * limit,
+                    take: limit,
                     include: {
-                        student: true
+                        average: true
                     }
                 });
+                const averageCount = yield this.prisma.student.count();
+                const totalPages = Math.ceil(averageCount / limit);
                 return {
-                    data: averages,
-                    status: status_enum_1.AppStatus.updated
+                    data: studentWithAverages,
+                    status: status_enum_1.AppStatus.updated,
+                    meta: {
+                        totalPages: totalPages
+                    }
                 };
             }
             catch (e) {
@@ -123,7 +127,9 @@ class AverageService {
             try {
                 const minMaxAverages = yield this.prisma.average.aggregate({
                     _count: true,
-                    _max: { average: true },
+                    _max: {
+                        average: true,
+                    },
                     _min: { average: true }
                 });
                 return {

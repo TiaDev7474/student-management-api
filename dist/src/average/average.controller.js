@@ -12,7 +12,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const average_service_1 = require("./average.service");
 const averageController = {
     getAll: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        const data = yield average_service_1.averageService.getAll();
+        const { limit = 5, page = 1 } = req.query;
+        const data = yield average_service_1.averageService.getAll(parseInt(String(limit)), parseInt(String(page)));
         return res.status(data.status).json(data);
     }),
     getMinMaxAverage: (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {

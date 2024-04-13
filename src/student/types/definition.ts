@@ -2,7 +2,9 @@ export interface IStudentDto {
     firstname: string,
     lastname: string,
 }
+export interface IUpdateStudent extends IStudentDto{
 
+}
 export interface IStudent {
     id: string
     firstname: string,

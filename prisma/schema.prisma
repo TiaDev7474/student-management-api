@@ -16,12 +16,14 @@ model Student {
   lastname  String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  Average   Average[]
+  average   Average[]
 }
 
 model Average {
-  id        String  @id
+  id        String   @id
   average   Int
-  student   Student @relation(fields: [studentId], references: [id])
+  student   Student  @relation(fields: [studentId], references: [id])
   studentId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

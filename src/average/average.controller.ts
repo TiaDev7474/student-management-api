@@ -4,7 +4,8 @@ import {averageService} from "./average.service";
 
 const averageController = {
     getAll: async (req: Request, res:Response, next: NextFunction) => {
-        const data = await  averageService.getAll();
+        const { limit = 5,page=1 } = req.query;
+        const data = await  averageService.getAll(parseInt(String(limit)), parseInt(String(page)));
         return res.status(data.status).json(data)
     },
     getMinMaxAverage: async (req: Request, res:Response, next: NextFunction) => {
@@ -15,7 +16,7 @@ const averageController = {
         const { average_id } = req.params;
         const updatedAverage = req.body;
         const data = await  averageService.update(updatedAverage, average_id);
-        return res.status(data.status).json(data)
+       return res.status(data.status).json(data)
     },
 
     delete: async (req: Request, res:Response, next: NextFunction) => {
